@@ -18,15 +18,14 @@ t_state	get_state(char **cmds[], int i);
 
 int	picoshell(char **cmds[])
 {
-	int		i			= -1;
 	int		last_read	= -1;
 	int		ret			= 0;
-
-	t_state	state;
+	int		i			= -1;
 	int		pip[2];
 	int		res;
 	int		stat_loc;
 	pid_t	pid;
+	t_state	state;
 
 	while (cmds[++i])
 	{
@@ -50,16 +49,13 @@ int	picoshell(char **cmds[])
 			close(pip[1]);
 		}
 	}
-	close(pip[0]);
-
-	while(1)
+	close(last_read);
+	do
 	{
 		res = wait(&stat_loc);
-		if (WEXITSTATUS(stat_loc) == 1)
+		if (WEXITSTATUS(stat_loc) == 1 || WIFSIGNALED(stat_loc))
 			ret = 1;
-		if (res == -1)
-			break;
-	}
+	} while (res != -1);
 	return (ret);
 }
 
@@ -85,7 +81,8 @@ void	ft_child(t_state state, char **argv, int pip[2], int last_read)
 	else if (state == LAST)
 	{
 		close(pip[1]);
-		dup2(last_read, STDIN_FILENO);
+		if (last_read != -1)
+			dup2(last_read, STDIN_FILENO);
 		execvp(argv[0], argv);
 		close(last_read);
 		exit(1);
@@ -101,6 +98,8 @@ t_state	get_state(char **cmds[], int i)
 	else
 		return (MID);
 }
+
+
 #include <stdio.h>
 
 int picoshell(char **cmds[]);
