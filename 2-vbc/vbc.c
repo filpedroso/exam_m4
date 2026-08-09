@@ -54,6 +54,7 @@ int	parse_expr(t_parser *pars)
 
 	while(ch(pars) == '+')
 	{
+		advance(pars);
 		value = value + parse_term(pars);
 		if (pars->error)
 			return (0);
@@ -71,11 +72,11 @@ int	parse_term(t_parser *pars)
 
 	while(ch(pars) == '*')
 	{
+		advance(pars);
 		value = value * parse_factor(pars);
 		if (pars->error)
 			return (0);
 	}
-
 	return (value);
 }
 
@@ -110,9 +111,14 @@ int	parse_factor(t_parser *pars)
 			pars->error = 1;
 			return (0);
 		}
-		return (value);
+		else
+		{
+			advance(pars);
+			return(value);
+		}
 	}
-	return (1);
+	else
+		return (parse_expr(pars));
 }
 
 char	ch(t_parser *pars)
