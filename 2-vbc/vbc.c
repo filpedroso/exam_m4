@@ -35,6 +35,8 @@ int main (int argc, char **argv)
 	pars.error	= 0;
 
 	result = parse_expr(&pars);
+	if (!pars.error && ch(&pars) != '\0')
+		pars.error = 1;
 	if (pars.error)
 	{
 		print_error(&pars);
@@ -82,6 +84,7 @@ int	parse_term(t_parser *pars)
 
 int	parse_factor(t_parser *pars)
 {
+	int	value;
 
 	if (ch(pars) ==  '\0')
 	{
@@ -91,20 +94,14 @@ int	parse_factor(t_parser *pars)
 
 	if (isdigit(ch(pars)))
 	{
+		value = ch(pars) - '0';
 		advance(pars);
-		return (ch(pars) - '0');
+		return (value);
 	}
 
 	if (ch(pars) == '(')
 	{
-		int value;
-
 		advance(pars);
-		if (ch(pars) == '\0')
-		{
-			pars->error = 1;
-			return (0);
-		}
 		value = parse_expr(pars);
 		if (pars->error || ch(pars) != ')')
 		{
@@ -117,8 +114,9 @@ int	parse_factor(t_parser *pars)
 			return(value);
 		}
 	}
-	else
-		return (parse_expr(pars));
+
+	pars->error = 1;
+	return (0);
 }
 
 char	ch(t_parser *pars)
